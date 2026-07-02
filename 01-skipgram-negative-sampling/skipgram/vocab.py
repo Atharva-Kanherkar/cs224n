@@ -5,7 +5,7 @@ matrices themselves) is indexed by integer word id, not by string. This is
 the foundation the rest of the pipeline is built on.
 """
 from dataclasses import dataclass
-
+from collections import Counter
 import numpy as np
 
 
@@ -46,4 +46,24 @@ def build_vocab(tokenized_sentences: list[list[str]], min_count: int = 1) -> Voc
     Returns:
         Vocab(word2idx, idx2word, counts)
     """
-    raise NotImplementedError("TODO: build_vocab")
+    counter = Counter()
+    for sentence in tokenized_sentences:
+        counter.update(sentence)
+
+
+    word2idx = {}
+    idx2word = []
+    counts = []
+
+    for word, count in counter.items():
+        if count<min_count:
+            continue
+        word2idx[word] = len(idx2word)
+        idx2word.append(word)
+        counts.append(count)
+
+    return Vocab(word2idx=word2idx, idx2word=idx2word, counts=np.array(counts))
+
+
+        
+
