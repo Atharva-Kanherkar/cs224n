@@ -32,4 +32,15 @@ def generate_skipgram_pairs(
     Returns:
         A flat list of (center_id, context_id) tuples.
     """
-    raise NotImplementedError("TODO: generate_skipgram_pairs")
+    results = []
+    for sentence in tokenized_sentences:
+        for center_pos, center_word in enumerate(sentence):
+            for near in range(center_pos - window_size, center_pos - window_size + 1):
+                if near == center_pos:
+                    continue
+                if near <0 or near >= len(sentence):continue
+
+                
+            
+            
+            
