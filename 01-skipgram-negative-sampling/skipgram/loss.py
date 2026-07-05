@@ -27,4 +27,8 @@ def negative_log_likelihood(pos_score, neg_scores: np.ndarray) -> float:
 
     Returns: a single float (the loss for this one training example).
     """
-    raise NotImplementedError("TODO: negative_log_likelihood")
+    pos_term= -np.logaddexp(0,-pos_score)
+    neg_term= -np.logaddexp(0, neg_scores)
+
+    loss = -pos_term -sum(neg_term)
+    return loss

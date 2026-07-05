@@ -28,7 +28,10 @@ def build_negative_sampling_distribution(counts: np.ndarray, power: float = 0.75
     counts: shape (vocab_size,), aligned with a Vocab's idx2word/word2idx.
     Returns: shape (vocab_size,) array of probabilities summing to 1.0.
     """
-    raise NotImplementedError("TODO: build_negative_sampling_distribution")
+    powered = counts ** power 
+    return powered/powered.sum()
+
+
 
 
 def sample_negatives(
@@ -51,4 +54,12 @@ def sample_negatives(
 
     Returns: integer array of shape (k,).
     """
-    raise NotImplementedError("TODO: sample_negatives")
+    negatives = []
+    while(len(negatives)) < k:
+        candidate = rng.choice(len(distribution), p=distribution)
+        if candidate == positive_idx:
+            continue
+        negatives.append(candidate)
+       
+    return np.array(negatives)
+    
