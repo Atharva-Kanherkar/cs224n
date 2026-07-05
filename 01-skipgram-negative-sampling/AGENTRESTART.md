@@ -66,20 +66,23 @@ What you ARE allowed to do:
 ## PROGRESS — where he is right now
 
 Exercise: `01-skipgram-negative-sampling/`. Turn a red test suite green, one
-function at a time, in dependency order. **15 / 23 tests passing.**
+function at a time, in dependency order. **17 / 23 tests passing.**
 
 DONE (green, he wrote all of it):
 - ✅ `vocab.py::build_vocab` (3 tests)
 - ✅ `dataset.py::generate_skipgram_pairs` (4 tests)
 - ✅ `negative_sampling.py` — both functions (4 tests) — first try, no bugs
 - ✅ `loss.py::negative_log_likelihood` (4 tests) — nailed the log-sigmoid stability trap
+- ✅ `model.py::__init__` (1 test) — two matrices + stored vocab_size/embedding_dim.
+     Slipped: left a leading space on line 1 (broke whole-file parse) — watch stray
+     whitespace/typos at column 0.
+- ✅ `model.py::sigmoid` (1 test) — first wrote `-logaddexp(0,-x)` (that's log-sigmoid);
+     fixed to `np.exp(-np.logaddexp(0,-x))`.
 
-NOT STARTED — this is where you pick up:
-- ⬜ `model.py` — **the heart of the exercise.** 5 pieces:
-  1. `__init__` — two matrices `W_center`, `W_context`, shape `(vocab_size, dim)`,
-     init `rng.normal(scale=0.01, size=...)`; also store vocab_size, embedding_dim. (easy)
-  2. `sigmoid` — stable: `np.exp(-np.logaddexp(0, -x))`. (easy, 1 line)
+IN PROGRESS — this is where you pick up:
+- ⬜ `model.py` — **the heart of the exercise.** Remaining pieces:
   3. `forward` — `pos_score = v_c·v_o`, `neg_scores = v_neg @ v_c`. (medium)
+     — just introduced fancy indexing + matrix-vector product, he's about to write it.
   4. `backward` — **THE exercise.** Hand-derive gradients with the chain rule.
      Test checks against a NUMERICAL gradient (finite differences), so he can't
      fake it — the calculus must be right. Teach the derivation VERBALLY/on paper,

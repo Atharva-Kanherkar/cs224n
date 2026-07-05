@@ -29,12 +29,18 @@ class SkipGramNegSamplingModel:
         gradient would be identical) and not large values (dot products
         would saturate the sigmoid immediately, killing the gradient signal
         before training starts).
-
+s
         Store vocab_size and embedding_dim on self too; tests and train.py
         may read them.
         """
-        raise NotImplementedError("TODO: SkipGramNegSamplingModel.__init__")
+        self.vocab_size = vocab_size
+        self.embedding_dim = embedding_dim
 
+
+        self.W_center= rng.normal(scale=0.02, size=(vocab_size,embedding_dim))
+        self.W_context= rng.normal(scale=0.02, size=(vocab_size,embedding_dim))
+
+ 
     @staticmethod
     def sigmoid(x: np.ndarray) -> np.ndarray:
         """Numerically stable sigmoid: 1 / (1 + exp(-x)).
@@ -43,7 +49,8 @@ class SkipGramNegSamplingModel:
         x = 1000 and x = -1000). Must work elementwise on arrays as well as
         on Python floats.
         """
-        raise NotImplementedError("TODO: sigmoid")
+        return np.exp(-np.logaddexp(0,-x))
+        
 
     def forward(self, center_idx: int, context_idx: int, negative_idxs: np.ndarray):
         """Compute the raw (pre-sigmoid) dot-product scores for one training
