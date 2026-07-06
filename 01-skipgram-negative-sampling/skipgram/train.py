@@ -4,7 +4,9 @@ training loop.
 
 import numpy as np
 
+from skipgram.loss import negative_log_likelihood
 from skipgram.model import SkipGramNegSamplingModel
+from skipgram.negative_sampling import sample_negatives
 
 
 def train_one_step(
@@ -22,8 +24,28 @@ def train_one_step(
     update is applied (i.e. the loss at the parameters you started this
     call with).
     """
-    raise NotImplementedError("TODO: train_one_step")
 
+    pos_score, neg_scores = model.forward(center_idx, context_idx, negative_idxs)
+    loss = negative_log_likelihood(pos_score, neg_scores)
+
+    grad_v_c, grad_v_o, grad_v_neg = model.backward(
+      center_idx,
+      context_idx,
+      negative_idxs,
+      pos_score,
+      neg_scores,
+    )
+    model.sgd_update(
+      center_idx,
+      context_idx,
+      negative_idxs,
+      grad_v_c,
+      grad_v_o,
+      grad_v_neg,
+      lr,
+    )
+
+    return float(loss)
 
 def train(
     pairs: list[tuple[int, int]],
@@ -50,4 +72,29 @@ def train(
         trend downward if everything above is implemented correctly —
         tests/test_train.py checks exactly that on a small end-to-end run.
     """
-    raise NotImplementedError("TODO: train")
+    rng = np.random.default_rng(seed)
+    epoch_losses: list[float] = []
+
+    for _ in range(epochs):
+      shuffled_pairs = list(pairs)
+      rng.shuffle(shuffled_pairs)
+
+      total_loss = 0.0
+      for center_idx, context_idx in shuffled_pairs:
+        negative_idxs = sample_negatives(
+          distribution=distribution,
+          positive_idx=context_idx,
+          k=k_negatives,
+          rng=rng,
+        )
+        total_loss += train_one_step(
+          model,
+          center_idx,
+          context_idx,
+          negative_idxs,
+          lr,
+        )
+
+      epoch_losses.append(total_loss / len(shuffled_pairs))
+
+    return epoch_losses

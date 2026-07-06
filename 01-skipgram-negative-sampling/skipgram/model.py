@@ -69,7 +69,14 @@ s
             array, neg_scores is shape (k,). These are RAW scores, not yet
             passed through sigmoid — that happens in loss.py.
         """
-        raise NotImplementedError("TODO: forward")
+        v_c = self.W_center[center_idx]
+        v_o = self.W_context[context_idx]
+        v_neg = self.W_context[negative_idxs]
+
+        pos_score = v_c @ v_o 
+        neg_scores = v_neg @ v_c
+        return (pos_score, neg_scores)
+
 
     def backward(
         self,
@@ -98,7 +105,18 @@ s
             grad_v_neg: shape (k, dim) — gradient w.r.t. W_context[negative_idxs],
                         row i is the gradient for negative_idxs[i]
         """
-        raise NotImplementedError("TODO: backward")
+        v_c = self.W_center[center_idx]          # shape (dim,)
+        v_o = self.W_context[context_idx]        # shape (dim,)
+        v_neg = self.W_context[negative_idxs]    # shape (k, dim)
+
+
+        d_pos_score = self.sigmoid(pos_score) - 1.0  # scalar
+        d_neg_scores = self.sigmoid(neg_scores)      # shape (k,)
+        grad_v_o = d_pos_score * v_c
+
+        grad_v_neg = d_neg_scores[:, np.newaxis] * v_c
+        grad_v_c = (d_pos_score * v_o) + np.sum(d_neg_scores[:, np.newaxis] * v_neg, axis=0)
+        return grad_v_c, grad_v_o, grad_v_neg
 
     def sgd_update(
         self,
@@ -131,4 +149,8 @@ s
         together before being applied. Look into `np.add.at`, or accumulate
         the per-row updates yourself before writing them.
         """
-        raise NotImplementedError("TODO: sgd_update")
+        
+        self.W_center[center_idx] = self.W_center[center_idx] - lr*grad_v_c
+        self.W_context[context_idx] = self.W_context[context_idx]  - lr*grad_v_o
+        
+        np.add.at(self.W_context, negative_idxs, -lr * grad_v_neg)
